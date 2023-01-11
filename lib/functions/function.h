@@ -20,6 +20,10 @@ void mqttStart(){
   mqttClient.setMaxPacketSize(1000);
 }
 
+void switchRelayState(){
+  Relay1.ResetState();
+}
+
 void startup(){
   Serial.begin(9600);
   //Log
@@ -31,44 +35,51 @@ void startup(){
   EEPROM.begin(sizeof(data) + 1); // +1 key
   memory.begin(0, 'k');
 
+  //Button
+  button.setPin(BUTTON_PIN);
+  button.setCallbackHandler(switchRelayState);
+
   //Relay
   println("Initialize relay");
   Relay1.SetPin(RELAY_PIN);
   Relay1.SetInvertMode(data.relayInvertMode);
-  Relay1.ChangeStateCallback(ChangeRelayState);
+  Relay1.ChangeStateCallback(changeRelayState);
   if(data.relaySaveStatus){ 
       println("Restore relay state");
       Relay1.SetState(data.state); };
 
   // Connecting WiFi
   println("Initialize WiFi");
-  if (data.factoryReset == true || data.wifiAP == true ) wifiAp();
+  if (data.factoryReset == true || data.wifiAP == true ) {
+    wifiAp();
+  } else {
+    wifiConnect();
+  }
 
   // Enable OTA update
   println("Starting OTA updates");
   ArduinoOTA.begin();
 
-  if (data.factoryReset==false){
-    if (data.factoryReset == true || data.ssid == "" ) wifiAp();
-    else wifiConnect();
-
-  //MQTT
-  mqttStart();
+  if (data.factoryReset==false){    
+    //MQTT
+    mqttStart();
   
-
-  //Timers
-  println("Starting timers");
-  MessageTimer.setTime(data.status_delay*1000);
-  MessageTimer.start();
-  ServiceMessageTimer.setTime(data.avaible_delay*1000);
-  ServiceMessageTimer.start();
+    // MQTT timers
+    println("Starting MQTT timers");
+    MessageTimer.setTime(data.status_delay*1000);
+    MessageTimer.start();
+    ServiceMessageTimer.setTime(data.avaible_delay*1000);
+    ServiceMessageTimer.start();
+  }
+  // WiFiAP timer
+  println("Starting WiFiAP timer");
   wifiApStaTimer.setTime(WIFIAPTIMER);
   wifiApStaTimer.attach(wifiApStaTimerHandler);
 
   println("Boot complete");
   println("-------------------------------");
-  }
 }
+
 
 void portalStart(){
   println("Starting portal");
@@ -76,8 +87,7 @@ void portalStart(){
   portal.disableAuth();
   portal.attach(portalAction);
   portal.OTA.attachUpdateBuild(OTAbuild);
-  if (data.wifiAP == true ) portal.start(WIFI_AP);
-  else portal.start(data.device_name);
+  portal.start(data.device_name);
   portal.enableOTA();
 }
 
@@ -165,7 +175,7 @@ void restart(){
   ESP.restart();
 }
 
-void ChangeRelayState(){
+void changeRelayState(){
   println("Change relay state triggered");
   if(data.relaySaveStatus){
     println("Save relay state");
@@ -174,3 +184,4 @@ void ChangeRelayState(){
   }
   publishRelay();
 }
+

@@ -11,6 +11,7 @@ void portalBuild(){
 
   // Configuration page
   if (portal.uri() == form.config) {
+    GP.PAGE_TITLE("Configuration");
     GP.TITLE("Configuration");
     GP.HR();
     GP.BUTTON_LINK(form.preferences, "Preferences");
@@ -24,12 +25,14 @@ void portalBuild(){
 
   //Log
   } else if (portal.uri() == form.log){
+    GP.PAGE_TITLE("Log");
     GP.AREA_LOG(glog, 20);
     GP.BUTTON_LINK(form.root, "Back");
 
   //Preferences
   } else if (portal.uri() == form.preferences){
     GP.FORM_BEGIN(form.preferences);
+      GP.PAGE_TITLE("Preferences");
       GP.TITLE("Preferences");
       GP.HR();
       GP.BLOCK_TAB_BEGIN("Device name");
@@ -40,9 +43,6 @@ void portalBuild(){
       GP.BLOCK_TAB_BEGIN("Settings");
         GP.BOX_BEGIN(GP_EDGES);
           GP.LABEL("Theme");   GP.SELECT("theme", "Light,Dark", data.theme);
-        GP.BOX_END();
-        GP.BOX_BEGIN(GP_EDGES);
-          GP.LABEL("Relay invert mode"); GP.SWITCH("relayInvertMode", data.relayInvertMode);
         GP.BOX_END();
         GP.BOX_BEGIN(GP_EDGES);
           GP.LABEL("Save relay status"); GP.SWITCH("relaySaveStatus", data.relaySaveStatus);
@@ -63,6 +63,7 @@ void portalBuild(){
     // WiFi configuration page 
   } else if (portal.uri() == form.WiFiConfig) {
       GP.FORM_BEGIN(form.WiFiConfig);
+        GP.PAGE_TITLE("WiFi configuration");
         GP.TITLE("WiFi");
         GP.HR();
 
@@ -97,6 +98,7 @@ void portalBuild(){
     // MQTT configuration page 
   } else if (portal.uri() == form.mqttConfig) {
     GP.FORM_BEGIN(form.mqttConfig);
+      GP.PAGE_TITLE("MQTT configuration");
       GP.TITLE("MQTT");
       GP.HR();
 
@@ -137,7 +139,8 @@ void portalBuild(){
     //Factory reset page 
   } else if (portal.uri() == form.factoryReset) {
     GP.FORM_BEGIN(form.factoryReset);
-      GP.TITLE( "Factory reset" );
+      GP.PAGE_TITLE("Factory reset");
+      GP.TITLE("Factory reset");
       GP.HR();
       GP.BOX_BEGIN(GP_EDGES);
         GP.LABEL("I'm really understand what I do");           
@@ -152,6 +155,7 @@ void portalBuild(){
     // Root page, "/"
   } else {
     GP.FORM_BEGIN(form.root);
+      GP.PAGE_TITLE("Home");
        GP.BLOCK_TAB_BEGIN("Control");
         GP.BOX_BEGIN(GP_EDGES);
           GP.LABEL( data.label ); GP.SWITCH("switch", Relay1.GetState());
@@ -199,7 +203,7 @@ void portalBuild(){
       GP.BUTTON_LINK(form.log, "Log");
     GP.FORM_END();
   }
-  BUILD_END();
+  GP.BUILD_END();
 }
 
 void portalCheckForm(){
@@ -295,10 +299,10 @@ void OTAbuild(bool UpdateEnd, const String& UpdateError) {
     #else
       GP.THEME(GP_LIGHT);
     #endif
-
+    GP.PAGE_TITLE(F("Firmware upgrade"));
     if (!UpdateEnd) {
       GP.BLOCK_TAB_BEGIN(F("Firmware upgrade"));
-        GP.OTA_FIRMWARE();
+        GP.OTA_FIRMWARE(F("OTA firmware"), GP_GREEN, true);
       GP.BLOCK_END();
       GP.BUTTON_LINK(form.config, "Back");
     } else if (UpdateError.length()) {
@@ -306,7 +310,7 @@ void OTAbuild(bool UpdateEnd, const String& UpdateError) {
         GP.TITLE(String(F("Update error: ")) + UpdateError);
         GP.BUTTON_LINK(form.firmwareUpgrade, F("Refresh"));
       GP.BLOCK_END();
-        
+
     } else {
       GP.BLOCK_TAB_BEGIN(F("Firmware upgrade"));
         GP.TITLE(F("Update Success!"));
@@ -314,6 +318,5 @@ void OTAbuild(bool UpdateEnd, const String& UpdateError) {
       GP.BLOCK_END();
       GP.BUTTON_LINK(form.root, "Home");
     }
-    
   GP.BUILD_END();
 }

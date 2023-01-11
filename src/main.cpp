@@ -4,16 +4,18 @@
 #include <GyverPortal.h>
 #include <EEManager.h>
 #include <ESPRelay.h>
+#include <Button.h>
 
-String version = "2.1.1";
+String version = "2.1.2";
 #define LIGHT_THEME 0
 #define DARK_THEME 1
-#define RELAY_PIN 0
+#define RELAY_PIN 12
+#define BUTTON_PIN 0
 
 struct Data {
   //Data
-  char label[32] = "Relay";
-  char device_name[32] = "relay";
+  char label[32] = "Sonoff";
+  char device_name[32] = "sonoff";
   bool relayInvertMode = false;
   bool factoryReset = true;
   byte wifiConnectTry = 0;
@@ -33,10 +35,10 @@ struct Data {
   int status_delay = 10;
   int avaible_delay = 60;
   //MQTT Topic
-  char discoveryTopic[100] = "homeassistant/switch/relay/config";
-  char commandTopic[100]   = "homeassistant/switch/relay/set";
-  char avaibleTopic[100]   = "homeassistant/switch/relay/avaible";
-  char stateTopic[100]     = "homeassistant/switch/relay/state";
+  char discoveryTopic[100] = "homeassistant/switch/sonoff/config";
+  char commandTopic[100]   = "homeassistant/switch/sonoff/set";
+  char avaibleTopic[100]   = "homeassistant/switch/sonoff/avaible";
+  char stateTopic[100]     = "homeassistant/switch/sonoff/state";
 };
 
 #define WIFIAPTIMER 180000
@@ -62,6 +64,7 @@ TimerMs MessageTimer, ServiceMessageTimer, WiFiApTimer, wifiApStaTimer;
 EspMQTTClient mqttClient;
 ESPRelay Relay1;
 bool resetAllow;
+Button button;
 
 void publishRelay();
 void SendDiscoveryMessage();
@@ -70,7 +73,7 @@ void wifiAp();
 void wifiConnect();
 void mqttPublish();
 void factoryReset();
-void ChangeRelayState();
+void changeRelayState();
 void mqttStart();
 void restart();
 
@@ -90,4 +93,5 @@ void loop(){
   portal.tick();
   WiFiApTimer.tick(); 
   wifiApStaTimer.tick();
+  button.tick();
 }
